@@ -7,20 +7,49 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+enum StatusMembro {
+  ativo
+  inativo
+  pendente
+}
+
+enum Graduacao {
+  CAMISETA
+  PROSPERO
+  MEIO_ESCUDO
+  OFICIAL
+  HONRADO
+  VETERANO
+}
+
 model Membro {
-  id            Int            @id @default(autoincrement())
-  nome          String
-  apelido       String
-  telefone      String
-  email         String?
-  mensalidades  Mensalidade[]
+  id           Int           @id @default(autoincrement())
+  nome         String
+  apelido      String
+  telefone     String
+  email        String?
+  cpf          String        @unique
+  status    StatusMembro @default(ativo)
+  graduacao  Graduacao 
+  funcao     String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  mensalidades Mensalidade[]
 }
 
 model Mensalidade {
-  id        Int      @id @default(autoincrement())
-  mes       String
-  valor     Float
-  pago      Boolean  @default(false)
-  membroId  Int
-  membro    Membro   @relation(fields: [membroId], references: [id])
+  id          Int       @id @default(autoincrement())
+  mes         String    // "MM/YYYY"
+  valor       Decimal
+  pago        Boolean   @default(false)
+  vencimento  DateTime  // ← novo campo
+  membroId    Int
+  membro      Membro    @relation(fields: [membroId], references: [id])
+}
+
+model Usuario {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  email String @unique
+  senha String
 }
