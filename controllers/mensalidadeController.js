@@ -2,94 +2,106 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 function calcularVencimento(mesString) {
-  const [mes, ano] = mesString.split('/').map(Number);
-  return new Date(ano, mes, 0); // último dia do mês
+    const [mes, ano] = mesString.split('/').map(Number);
+    return new Date(ano, mes, 0); // último dia do mês
 }
 
 module.exports = {
-  
-  async listarMensalidades(req, res) {
-    try {
-      const mensalidades = await prisma.mensalidade.findMany({
-        include: { membro: true },
-        orderBy: { mes: 'desc' },
-      });
-      res.json(mensalidades);
-    } catch (error) {
-      console.error('Erro ao listar mensalidades:', error);
-      res.status(500).json({ erro: 'Erro ao listar mensalidades' });
-    }
-  },
 
-  async criarMensalidade(req, res) {
-  const { mes, valor, membroId } = req.body;
+    async listarMensalidades(req, res) {
+        try {
+            const mensalidades = await prisma.mensalidade.findMany({
+                include: { membro: true },
+                orderBy: { mes: 'desc' },
+            });
+            res.json(mensalidades);
+        } catch (error) {
+            console.error('Erro ao listar mensalidades:', error);
+            res.status(500).json({ erro: 'Erro ao listar mensalidades' });
+        }
+    },
 
-  if (!/^((0[1-9])|(1[0-2]))\/\d{4}$/.test(mes)) {
-    return res.status(400).json({ erro: 'Formato de mês inválido (use MM/YYYY)' });
-  }
+    async criarMensalidade(req, res) {
+        const { mes, valor, membroId } = req.body;
 
-  const vencimento = calcularVencimento(mes);   // ← sem “this.”
+        if (!/^((0[1-9])|(1[0-2]))\/\d{4}$/.test(mes)) {
+            return res.status(400).json({ erro: 'Formato de mês inválido (use MM/YYYY)' });
+        }
 
-  try {
-    const novaMensalidade = await prisma.mensalidade.create({
-      data: {
-        mes,
-        valor: Number(valor),
-        pago: false,
-        membroId: Number(membroId),
-        vencimento,
-      },
-    });
-    return res.status(201).json(novaMensalidade);
-  } catch (error) {
-    console.error('Erro ao cadastrar mensalidade:', error);
-    return res.status(500).json({ erro: 'Erro ao cadastrar mensalidade' });
-  }
-},
+        const vencimento = calcularVencimento(mes);
 
-  async marcarComoPago(req, res) {
-    const { id } = req.params;
-    const { pago } = req.body;
+        try {
+            // Verifica duplicidade: mesma mensalidade para mesmo membro e mês
+            const existente = await prisma.mensalidade.findFirst({
+                where: {
+                    mes,
+                    membroId: Number(membroId),
+                },
+            });
 
-    try {
-      const atualizada = await prisma.mensalidade.update({
-        where: { id: Number(id) },
-        data: { pago: Boolean(pago) },
-      });
-      res.json(atualizada);
-    } catch (error) {
-      console.error('Erro ao atualizar status da mensalidade:', error);
-      res.status(500).json({ erro: 'Erro ao atualizar status da mensalidade' });
-    }
-  },
+            if (existente) {
+                return res.status(409).json({ erro: 'Parcela já cadastrada para este mês e membro.' });
+            }
 
-  async marcarComoPagoPut(req, res) {
-    const id = parseInt(req.params.id);
+            const novaMensalidade = await prisma.mensalidade.create({
+                data: {
+                    mes,
+                    valor: Number(valor),
+                    pago: false,
+                    membroId: Number(membroId),
+                    vencimento,
+                },
+            });
+            return res.status(201).json(novaMensalidade);
+        } catch (error) {
+            console.error('Erro ao cadastrar mensalidade:', error);
+            return res.status(500).json({ erro: 'Erro ao cadastrar mensalidade' });
+        }
+    },
 
-    try {
-      const atualizada = await prisma.mensalidade.update({
-        where: { id },
-        data: { pago: true },
-      });
-      res.json(atualizada);
-    } catch (error) {
-      console.error('Erro ao marcar como pago:', error);
-      res.status(500).json({ erro: 'Erro ao marcar como pago' });
-    }
-  },
+    async marcarComoPago(req, res) {
+        const { id } = req.params;
+        const { pago } = req.body;
 
-  async deletarMensalidade(req, res) {
-    const { id } = req.params;
+        try {
+            const atualizada = await prisma.mensalidade.update({
+                where: { id: Number(id) },
+                data: { pago: Boolean(pago) },
+            });
+            res.json(atualizada);
+        } catch (error) {
+            console.error('Erro ao atualizar status da mensalidade:', error);
+            res.status(500).json({ erro: 'Erro ao atualizar status da mensalidade' });
+        }
+    },
 
-    try {
-      await prisma.mensalidade.delete({
-        where: { id: Number(id) },
-      });
-      res.status(204).send();
-    } catch (err) {
-      console.error('Erro ao excluir mensalidade:', err);
-      res.status(500).json({ erro: 'Erro ao excluir mensalidade' });
-    }
-  },
-  
+    async marcarComoPagoPut(req, res) {
+        const id = parseInt(req.params.id);
+
+        try {
+            const atualizada = await prisma.mensalidade.update({
+                where: { id },
+                data: { pago: true },
+            });
+            res.json(atualizada);
+        } catch (error) {
+            console.error('Erro ao marcar como pago:', error);
+            res.status(500).json({ erro: 'Erro ao marcar como pago' });
+        }
+    },
+
+    async deletarMensalidade(req, res) {
+        const { id } = req.params;
+
+        try {
+            await prisma.mensalidade.delete({
+                where: { id: Number(id) },
+            });
+            res.status(204).send();
+        } catch (err) {
+            console.error('Erro ao excluir mensalidade:', err);
+            res.status(500).json({ erro: 'Erro ao excluir mensalidade' });
+        }
+    },
+
 };

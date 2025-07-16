@@ -12,11 +12,14 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const membrosRoutes = require('./routes/membrosRoutes');
 const mensalidadesRoutes = require('./routes/mensalidadesRoutes');
+const usuarioRoutes = require('./routes/usuarioRoutes');
+app.use('/auth', usuarioRoutes);
 
 // Usa as rotas
 app.use('/auth', authRoutes);
 app.use('/membros', membrosRoutes);
 app.use('/mensalidades', mensalidadesRoutes);
+app.use('/auth', usuarioRoutes);
 
 // Rota raiz simples
 app.get('/', (req, res) => res.send('API do Motoclube funcionando 🚀'));
