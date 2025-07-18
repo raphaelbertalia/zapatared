@@ -6,35 +6,37 @@ async function login(req, res) {
   const { email, senha } = req.body;
 
   if (!email || !senha) {
+    console.warn('[LOGIN] Email ou senha ausentes');
     return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
   }
 
   try {
+    console.log(`[LOGIN] Tentando login com email: ${email}`);
+
     const usuario = await prisma.usuario.findUnique({ where: { email } });
-    console.log('Usuário encontrado:', usuario);
 
     if (!usuario) {
+      console.warn(`[LOGIN] Usuário não encontrado: ${email}`);
       return res.status(401).json({ erro: 'Credenciais inválidas' });
     }
 
-    // Verifica senha com bcrypt
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
     if (!senhaValida) {
+      console.warn(`[LOGIN] Senha inválida para: ${email}`);
       return res.status(401).json({ erro: 'Credenciais inválidas' });
     }
 
-    // Gera o token JWT com email e id, por exemplo
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    // Retorna token e nome do usuário
+    console.log(`[LOGIN] Login bem-sucedido: ${email}`);
     return res.json({ token, nome: usuario.nome });
 
   } catch (err) {
-    console.error(err);
+    console.error('[LOGIN] Erro inesperado no login:', err);
     return res.status(500).json({ erro: 'Erro interno do servidor' });
   }
 }
