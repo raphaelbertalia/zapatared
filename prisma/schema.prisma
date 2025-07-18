@@ -53,3 +53,69 @@ model Usuario {
   email String @unique
   senha String
 }
+
+model Produto {
+  id        String            @id @default(cuid())
+  nome      String
+  tipo      TipoProduto
+  tamanho   String?           // ← para boné
+  custo     Decimal?          // ← para boné
+  valorVenda Decimal?         // ← para boné
+  variantes VarianteProduto[]
+}
+
+model VarianteProduto {
+  id              String           @id @default(cuid())
+  produtoId       String
+  produto         Produto          @relation(fields: [produtoId], references: [id])
+  tamanho         String
+  precoFornecedor Decimal
+  precoVenda      Decimal
+  subtipo         String? 
+  itensEncomenda  ItemEncomenda[]
+}
+
+model Comprador {
+  id         String      @id @default(cuid())
+  email      String?
+  encomendas Encomenda[] // relação inversa
+}
+
+model Encomenda {
+  id          String      @id @default(cuid())
+  data        DateTime    @default(now())
+
+  compradorId String?     // pode ser nulo, se não for comprador cadastrado
+  comprador   Comprador?  @relation(fields: [compradorId], references: [id])
+
+  compradorNome     String
+  compradorTelefone String
+  compradorEmail    String?
+  compradorEndereco String?
+
+  itens       ItemEncomenda[]
+  status      StatusEncomenda  @default(AGUARDANDO)
+}
+
+model ItemEncomenda {
+  id           String           @id @default(cuid())
+  encomendaId  String
+  encomenda    Encomenda        @relation(fields: [encomendaId], references: [id])
+  varianteId   String
+  variante     VarianteProduto  @relation(fields: [varianteId], references: [id])
+  quantidade   Int
+}
+
+enum TipoProduto {
+  CAMISETA_MANGA_CURTA
+  CAMISETA_MANGA_LONGA
+  CAMISETA_REGATA
+  BONE
+}
+
+enum StatusEncomenda {
+  AGUARDANDO
+  PEDIDO_REALIZADO
+  RECEBIDO
+  ENTREGUE
+}

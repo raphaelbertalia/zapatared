@@ -8,23 +8,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Importa suas rotas (ajuste o caminho se for diferente)
 const authRoutes = require('./routes/auth');
 const membrosRoutes = require('./routes/membrosRoutes');
 const mensalidadesRoutes = require('./routes/mensalidadesRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
-app.use('/auth', usuarioRoutes);
+const produtoRoutes = require('./routes/produtoRoutes');
 
-// Usa as rotas
 app.use('/auth', authRoutes);
+app.use('/usuarios', usuarioRoutes);
 app.use('/membros', membrosRoutes);
 app.use('/mensalidades', mensalidadesRoutes);
-app.use('/auth', usuarioRoutes);
+app.use('/produtos', produtoRoutes);
 
-// Rota raiz simples
 app.get('/', (req, res) => res.send('API do Motoclube funcionando 🚀'));
 
-// Porta
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Rodando em http://localhost:${PORT}`));
 
