@@ -1,4 +1,4 @@
-const prisma = require('../prisma/client');
+const prisma = require('../prismaClient');
 
 /**
  * Converte qualquer entrada do front‑end para o enum do Prisma.

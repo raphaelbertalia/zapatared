@@ -1,4 +1,4 @@
-const prisma = require('../prisma/client');
+const prisma = require('../prismaClient');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs'); // instale com: npm install bcryptjs
 
