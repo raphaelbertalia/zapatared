@@ -29,22 +29,22 @@ model Membro {
   telefone     String
   email        String?
   cpf          String        @unique
-  status    StatusMembro @default(ativo)
-  graduacao  Graduacao 
-  funcao     String?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  status       StatusMembro  @default(ativo)
+  graduacao    Graduacao
+  funcao       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   mensalidades Mensalidade[]
 }
 
 model Mensalidade {
-  id          Int       @id @default(autoincrement())
-  mes         String    // "MM/YYYY"
-  valor       Decimal
-  pago        Boolean   @default(false)
-  vencimento  DateTime  // ← novo campo
-  membroId    Int
-  membro      Membro    @relation(fields: [membroId], references: [id])
+  id         Int      @id @default(autoincrement())
+  mes        String // "MM/YYYY"
+  valor      Decimal
+  pago       Boolean  @default(false)
+  vencimento DateTime // ← novo campo
+  membroId   Int
+  membro     Membro   @relation(fields: [membroId], references: [id])
 }
 
 model Usuario {
@@ -55,23 +55,22 @@ model Usuario {
 }
 
 model Produto {
-  id        String            @id @default(cuid())
-  nome      String
-  tipo      TipoProduto
-  tamanho   String?           // ← para boné
-  custo     Decimal?          // ← para boné
-  valorVenda Decimal?         // ← para boné
-  variantes VarianteProduto[]
+  id         String           @id @default(cuid())
+  nome       String
+  tipo       TipoProduto
+  valorVenda Float
+
+  compras    Compra[]
+  variantes  VarianteProduto[]
 }
 
 model VarianteProduto {
-  id              String           @id @default(cuid())
+  id              String          @id @default(cuid())
   produtoId       String
-  produto         Produto          @relation(fields: [produtoId], references: [id])
+  produto         Produto         @relation(fields: [produtoId], references: [id])
   tamanho         String
-  precoFornecedor Decimal
-  precoVenda      Decimal
-  subtipo         String? 
+  subtipo         String?
+
   itensEncomenda  ItemEncomenda[]
 }
 
@@ -82,28 +81,46 @@ model Comprador {
 }
 
 model Encomenda {
-  id          String      @id @default(cuid())
-  data        DateTime    @default(now())
+  id   String   @id @default(cuid())
+  data DateTime @default(now())
 
-  compradorId String?     // pode ser nulo, se não for comprador cadastrado
-  comprador   Comprador?  @relation(fields: [compradorId], references: [id])
+  compradorId String? // pode ser nulo, se não for comprador cadastrado
+  comprador   Comprador? @relation(fields: [compradorId], references: [id])
 
   compradorNome     String
   compradorTelefone String
   compradorEmail    String?
   compradorEndereco String?
 
-  itens       ItemEncomenda[]
-  status      StatusEncomenda  @default(AGUARDANDO)
+  itens  ItemEncomenda[]
+  status StatusEncomenda @default(AGUARDANDO)
 }
 
 model ItemEncomenda {
-  id           String           @id @default(cuid())
-  encomendaId  String
-  encomenda    Encomenda        @relation(fields: [encomendaId], references: [id])
-  varianteId   String
-  variante     VarianteProduto  @relation(fields: [varianteId], references: [id])
-  quantidade   Int
+  id          String          @id @default(cuid())
+  encomendaId String
+  encomenda   Encomenda       @relation(fields: [encomendaId], references: [id])
+  varianteId  String
+  variante    VarianteProduto @relation(fields: [varianteId], references: [id])
+  quantidade  Int
+}
+
+model Compra {
+  id            Int          @id @default(autoincrement())
+  produtoId     String
+  produto       Produto      @relation(fields: [produtoId], references: [id])
+  fornecedorId  Int
+  fornecedor    Fornecedor   @relation(fields: [fornecedorId], references: [id])
+  quantidade    Int
+  valorUnitario Float
+  dataCompra    DateTime     @default(now())
+  status        StatusCompra @default(EM_ENCOMENDA)
+}
+
+model Fornecedor {
+  id      Int      @id @default(autoincrement())
+  nome    String
+  compras Compra[]
 }
 
 enum TipoProduto {
@@ -118,4 +135,10 @@ enum StatusEncomenda {
   PEDIDO_REALIZADO
   RECEBIDO
   ENTREGUE
+}
+
+enum StatusCompra {
+  EM_ENCOMENDA
+  COMPRA_FEITA
+  CONCLUIDA
 }

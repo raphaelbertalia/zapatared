@@ -15,12 +15,14 @@ const membrosRoutes = require('./routes/membrosRoutes');
 const mensalidadesRoutes = require('./routes/mensalidadesRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
+const fornecedorRoutes = require('./routes/fornecedorRoutes')
 
 app.use('/auth', authRoutes);
 app.use('/usuarios', usuarioRoutes);
 app.use('/membros', membrosRoutes);
 app.use('/mensalidades', mensalidadesRoutes);
 app.use('/produtos', produtoRoutes);
+app.use('/fornecedores', fornecedorRoutes);
 
 app.get('/', (req, res) => res.send('API do Motoclube funcionando 🚀'));
 
